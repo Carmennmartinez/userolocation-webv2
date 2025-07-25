@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>USER LOCATION WEB</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <h1>📍 Mapa de Ubicaciones</h1>
+  <div id="map" style="height: 400px;"></div>
+  <h2>📋 Lista de Registros</h2>
+  <div id="list"></div>
+
+  <!-- Tu JS personalizado -->
+  <script src="script.js"></script>
+
+  <!-- Google Maps con callback -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDH_07Cc4Sr1doARFD4nqHFIKhYv1fS2fU&callback=initMap">
+  </script>
+</body>
+</html>
