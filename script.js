@@ -1,4 +1,3 @@
-// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDBCIFQGL1z9jpvS83nNgZET60u378Y5zI",
   authDomain: "userlocation-67584.firebaseapp.com",
@@ -14,6 +13,7 @@ const db = firebase.firestore();
 
 let map;
 let markers = [];
+let allItems = []; // Lista completa para filtrar
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
@@ -21,10 +21,50 @@ function initMap() {
     zoom: 12
   });
 
+  cargarDatos();
+
+  // 🔍 Filtro por nombre en tiempo real
+  document.getElementById("search").addEventListener("input", (e) => {
+    const texto = e.target.value.toLowerCase();
+    const listDiv = document.getElementById("list");
+    listDiv.innerHTML = "";
+
+    allItems.forEach(({ name, lat, lng, displayDate, marker }) => {
+      if (name.toLowerCase().includes(texto)) {
+        const listItem = document.createElement("p");
+        listItem.textContent = `👤 ${name} | 📍 ${lat.toFixed(4)}, ${lng.toFixed(4)} | 🕒 ${displayDate}`;
+        listItem.style.cursor = 'pointer';
+
+        listItem.addEventListener('click', () => {
+          markers.forEach(m => m.setIcon("http://maps.google.com/mapfiles/ms/icons/grey-dot.png"));
+          marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+          map.setCenter({ lat, lng });
+          map.setZoom(15);
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `
+              <strong>👤 Nombre:</strong> ${name}<br>
+              <strong>📍 Ubicación:</strong> ${lat}, ${lng}<br>
+              <strong>🕒 Fecha:</strong> ${displayDate}`
+          });
+          infoWindow.open(map, marker);
+        });
+
+        listDiv.appendChild(listItem);
+      }
+    });
+  });
+}
+
+function cargarDatos() {
   const listDiv = document.getElementById("list");
   listDiv.innerHTML = "";
+  allItems = [];
+  markers = [];
 
-  db.collection("Locations").get()
+  db.collection("Locations")
+    .orderBy("date", "desc")
+    .get()
     .then((querySnapshot) => {
       if (querySnapshot.empty) {
         listDiv.innerHTML = "<p>No hay ubicaciones disponibles.</p>";
@@ -35,6 +75,7 @@ function initMap() {
         const data = doc.data();
         const geoPoint = data.location;
         const timestamp = data.date;
+        const name = data.name || "Sin nombre";
 
         if (!geoPoint || typeof geoPoint.latitude !== "number" || typeof geoPoint.longitude !== "number") return;
         if (!timestamp || !timestamp.toDate) return;
@@ -57,34 +98,33 @@ function initMap() {
 
         const displayDate = date.toLocaleString('es-MX', opciones);
 
-        // Crear marcador (gris por defecto)
         const marker = new google.maps.Marker({
           position: { lat, lng },
           map: map,
-          title: displayDate,
+          title: `${name} - ${displayDate}`,
           icon: "http://maps.google.com/mapfiles/ms/icons/grey-dot.png"
         });
 
         markers.push(marker);
 
-        // Crear elemento de lista
+        allItems.push({ name, lat, lng, displayDate, marker });
+
+        // Mostrar al cargar sin filtro
         const listItem = document.createElement("p");
-        listItem.textContent = `📍 ${lat}, ${lng} - ${displayDate}`;
+        listItem.textContent = `👤 ${name} | 📍 ${lat.toFixed(4)}, ${lng.toFixed(4)} | 🕒 ${displayDate}`;
         listItem.style.cursor = 'pointer';
 
         listItem.addEventListener('click', () => {
-          // Restaurar todos los íconos a gris
           markers.forEach(m => m.setIcon("http://maps.google.com/mapfiles/ms/icons/grey-dot.png"));
-
-          // Resaltar marcador actual
           marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
-
-          // Centrar mapa y mostrar info
           map.setCenter({ lat, lng });
           map.setZoom(15);
 
           const infoWindow = new google.maps.InfoWindow({
-            content: `<strong>📍 Ubicación:</strong><br>${lat}, ${lng}<br><strong>Fecha:</strong><br>${displayDate}`
+            content: `
+              <strong>👤 Nombre:</strong> ${name}<br>
+              <strong>📍 Ubicación:</strong> ${lat}, ${lng}<br>
+              <strong>🕒 Fecha:</strong> ${displayDate}`
           });
           infoWindow.open(map, marker);
         });
@@ -98,5 +138,4 @@ function initMap() {
     });
 }
 
-// Necesario para que Google Maps pueda llamar initMap al terminar de cargar
 window.initMap = initMap;

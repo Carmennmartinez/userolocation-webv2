@@ -15,3 +15,14 @@ body {
   margin-bottom: 4px;
   border-left: 4px solid #007BFF;
 }
+
+#search{
+  padding: 5px;
+  border-radius: 19px;
+  cursor: pointer;
+  padding-left: 10px;
+  padding-right: 8px; 
+  padding-top: 4px;
+  width: 400px; /* Aumenta este valor para hacerlo más largo */
+
+}
