@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>USER LOCATION WEB</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -13,10 +14,17 @@
 
   <h2>🔍 Buscar por nombre</h2>
   <input type="text" id="search" placeholder="Escribe un nombre..." />
+  <h2>🔍 Buscar por fecha</h2>
+  <label for="startDate">Fecha inicio:</label>
+  <input type="date" id="search" name="startDate" placeholder="Inicio de fecha" /> 
+  <label for="endDate">Fecha fin:</label>
+  <input type="date" id="search" name="endDate" placeholder="Inicio de fecha" />
+
+  <button onclick="filtrarPorFechaFirestore()">Filtrar por fecha</button>
+
 
   <h2>📋 Lista de Registros</h2>
   <div id="list"></div>
-
   <script src="script.js"></script>
   <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDH_07Cc4Sr1doARFD4nqHFIKhYv1fS2fU&callback=initMap">

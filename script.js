@@ -138,4 +138,101 @@ function cargarDatos() {
     });
 }
 
+function filtrarPorFechaFirestore() {
+  const startDateInput = document.getElementById("startDate").value;
+  const endDateInput = document.getElementById("endDate").value;
+  const listDiv = document.getElementById("list");
+
+  if (!startDateInput || !endDateInput) {
+    alert("Selecciona ambas fechas para filtrar.");
+    return;
+  }
+
+  const start = new Date(startDateInput);
+  const end = new Date(endDateInput);
+  end.setHours(23, 59, 59, 999); // Para incluir todo el día final
+
+  listDiv.innerHTML = "";
+  allItems = [];
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+
+  db.collection("Locations")
+    .where("date", ">=", start)
+    .where("date", "<=", end)
+    .orderBy("date", "desc")
+    .get()
+    .then((querySnapshot) => {
+      if (querySnapshot.empty) {
+        listDiv.innerHTML = "<p>No se encontraron ubicaciones en ese rango.</p>";
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const geoPoint = data.location;
+        const timestamp = data.date;
+        const name = data.name || "Sin nombre";
+
+        if (!geoPoint || typeof geoPoint.latitude !== "number" || typeof geoPoint.longitude !== "number") return;
+        if (!timestamp || !timestamp.toDate) return;
+
+        const lat = geoPoint.latitude;
+        const lng = geoPoint.longitude;
+        const date = timestamp.toDate();
+
+        const opciones = {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+          timeZone: 'America/Mexico_City'
+        };
+
+        const displayDate = date.toLocaleString('es-MX', opciones);
+
+        const marker = new google.maps.Marker({
+          position: { lat, lng },
+          map: map,
+          title: `${name} - ${displayDate}`,
+          icon: "http://maps.google.com/mapfiles/ms/icons/grey-dot.png"
+        });
+
+        markers.push(marker);
+
+        allItems.push({ name, lat, lng, displayDate, marker });
+
+        const listItem = document.createElement("p");
+        listItem.textContent = `👤 ${name} | 📍 ${lat.toFixed(4)}, ${lng.toFixed(4)} | 🕒 ${displayDate}`;
+        listItem.style.cursor = 'pointer';
+
+        listItem.addEventListener('click', () => {
+          markers.forEach(m => m.setIcon("http://maps.google.com/mapfiles/ms/icons/grey-dot.png"));
+          marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+          map.setCenter({ lat, lng });
+          map.setZoom(15);
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `
+              <strong>👤 Nombre:</strong> ${name}<br>
+              <strong>📍 Ubicación:</strong> ${lat}, ${lng}<br>
+              <strong>🕒 Fecha:</strong> ${displayDate}`
+          });
+          infoWindow.open(map, marker);
+        });
+
+        listDiv.appendChild(listItem);
+      });
+    })
+    .catch((error) => {
+      console.error("❌ Error filtrando ubicaciones:", error);
+      listDiv.innerHTML = "<p>Error al filtrar las ubicaciones.</p>";
+    });
+}
+
+
 window.initMap = initMap;
