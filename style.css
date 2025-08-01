@@ -16,7 +16,7 @@ body {
   border-left: 4px solid #007BFF;
 }
 
-#search {
+#search,#startDate,#endDate{
   padding: 10px 14px;
   width: 320px;
   border: none;
@@ -30,6 +30,16 @@ body {
 }
 
 #search:focus {
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+#startDate:focus {
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+#endDate:focus {
   background-color: #fff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
