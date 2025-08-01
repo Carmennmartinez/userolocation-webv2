@@ -29,6 +29,34 @@ function initMap() {
     const listDiv = document.getElementById("list");
     listDiv.innerHTML = "";
 
+    if (!texto) {
+      // Si input vacío, mostrar todos los datos cargados
+      allItems.forEach(({ name, lat, lng, displayDate, marker }) => {
+        const listItem = document.createElement("p");
+        listItem.textContent = `👤 ${name} | 📍 ${lat.toFixed(4)}, ${lng.toFixed(4)} | 🕒 ${displayDate}`;
+        listItem.style.cursor = 'pointer';
+
+        listItem.addEventListener('click', () => {
+          markers.forEach(m => m.setIcon("http://maps.google.com/mapfiles/ms/icons/grey-dot.png"));
+          marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+          map.setCenter({ lat, lng });
+          map.setZoom(15);
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `
+              <strong>👤 Nombre:</strong> ${name}<br>
+              <strong>📍 Ubicación:</strong> ${lat}, ${lng}<br>
+              <strong>🕒 Fecha:</strong> ${displayDate}`
+          });
+          infoWindow.open(map, marker);
+        });
+
+        listDiv.appendChild(listItem);
+      });
+      return;
+    }
+
+    // Filtrar por texto
     allItems.forEach(({ name, lat, lng, displayDate, marker }) => {
       if (name.toLowerCase().includes(texto)) {
         const listItem = document.createElement("p");
@@ -54,12 +82,34 @@ function initMap() {
       }
     });
   });
+
+  // Botón limpiar filtro de fecha
+  document.getElementById("clearDateFilter").addEventListener("click", () => {
+    document.getElementById("startDate").value = "";
+    document.getElementById("endDate").value = "";
+    cargarDatos();
+  });
+
+  // Botón limpiar búsqueda por nombre
+  document.getElementById("clearNameFilter").addEventListener("click", () => {
+    document.getElementById("search").value = "";
+
+    const startDateInput = document.getElementById("startDate").value;
+    const endDateInput = document.getElementById("endDate").value;
+
+    if (startDateInput && endDateInput) {
+      filtrarPorFechaFirestore();
+    } else {
+      cargarDatos();
+    }
+  });
 }
 
 function cargarDatos() {
   const listDiv = document.getElementById("list");
   listDiv.innerHTML = "";
   allItems = [];
+  markers.forEach(m => m.setMap(null));
   markers = [];
 
   db.collection("Locations")
@@ -109,7 +159,7 @@ function cargarDatos() {
 
         allItems.push({ name, lat, lng, displayDate, marker });
 
-        // Mostrar al cargar sin filtro
+        // Mostrar en lista
         const listItem = document.createElement("p");
         listItem.textContent = `👤 ${name} | 📍 ${lat.toFixed(4)}, ${lng.toFixed(4)} | 🕒 ${displayDate}`;
         listItem.style.cursor = 'pointer';
@@ -150,7 +200,7 @@ function filtrarPorFechaFirestore() {
 
   const start = new Date(startDateInput);
   const end = new Date(endDateInput);
-  end.setHours(23, 59, 59, 999); // Para incluir todo el día final
+  end.setHours(23, 59, 59, 999); // Incluir todo el día
 
   listDiv.innerHTML = "";
   allItems = [];
@@ -233,6 +283,5 @@ function filtrarPorFechaFirestore() {
       listDiv.innerHTML = "<p>Error al filtrar las ubicaciones.</p>";
     });
 }
-
 
 window.initMap = initMap;

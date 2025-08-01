@@ -14,6 +14,8 @@
 
   <h2>🔍 Buscar por nombre</h2>
   <input type="text" id="search" placeholder="Escribe un nombre..." />
+  <button id="clearNameFilter">Limpiar</button>
+
 
   <h2>🔍 Buscar por fecha</h2>
   <label for="startDate">Fecha inicio:</label>
@@ -23,6 +25,7 @@
   <input type="date" id="endDate" name="endDate" placeholder="Fin de fecha" />
 
   <button onclick="filtrarPorFechaFirestore()">Buscar</button>
+  <button id="clearDateFilter">Limpiar</button>
 
   <h2>📋 Lista de Registros</h2>
   <div id="list"></div>
